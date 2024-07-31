@@ -1285,7 +1285,7 @@ MAC_KEYS = (
 # We have yet to support force feedback but probably should
 # eventually:
 
-FORCE_FEEDBACK = (((i, hex(i)) for i in range(0, 65536)))  # Motor in gamepad
+FORCE_FEEDBACK = (tuple((i, hex(i)) for i in range(0, 65536)))  # Motor in gamepad
 FORCE_FEEDBACK_STATUS = ()  # Status of motor
 
 POWER = ()  # Power switch
@@ -2950,7 +2950,7 @@ class GamePad(InputDevice):
                                      self.__device_number))
         stop_process.start()
 
-    def __get_vibration_code(self, left_motor, right_motor, duration):
+    def write_vibration_effect(self, left_motor, right_motor, duration):
         """This is some crazy voodoo, if you can simplify it, please do."""
         inner_event = struct.pack(
             '2h6x2h2x2H28x',
@@ -2963,24 +2963,21 @@ class GamePad(InputDevice):
         buf_conts = ioctl(self._write_device, 1076905344, inner_event)
         return int(codecs.encode(buf_conts[1:3], 'hex'), 16)
 
-    def _set_vibration_nix(self, left_motor, right_motor, duration):
+    def _set_vibration_nix(self, effect: int):
         """Control the motors on Linux.
         Duration is in miliseconds."""
-        code = self.__get_vibration_code(left_motor, right_motor, duration)
         secs, msecs = convert_timeval(time.time())
-        outer_event = struct.pack(EVENT_FORMAT, secs, msecs, 0x15, code, 1)
+        outer_event = struct.pack(EVENT_FORMAT, secs, msecs, 0x15, effect, 1)
         self._write_device.write(outer_event)
         self._write_device.flush()
 
-    def set_vibration(self, left_motor, right_motor, duration):
+    def set_vibration(self, effect: int):
         """Control the speed of both motors seperately or together.
         left_motor and right_motor arguments require a number between
         0 (off) and 1 (full).
         duration is miliseconds, e.g. 1000 for a second."""
-        if WIN:
-            self._set_vibration_win(left_motor, right_motor, duration)
-        elif NIX:
-            self._set_vibration_nix(left_motor, right_motor, duration)
+        if NIX:
+            self._set_vibration_nix(effect)
         else:
             raise NotImplementedError
 
