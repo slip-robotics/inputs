@@ -1285,7 +1285,7 @@ MAC_KEYS = (
 # We have yet to support force feedback but probably should
 # eventually:
 
-FORCE_FEEDBACK = ()  # Motor in gamepad
+FORCE_FEEDBACK = (((i, hex(i)) for i in range(0, 65536)))  # Motor in gamepad
 FORCE_FEEDBACK_STATUS = ()  # Status of motor
 
 POWER = ()  # Power switch
@@ -1299,7 +1299,7 @@ CURRENT = ()
 
 EVENT_MAP = (
     ('types', EVENT_TYPES),
-    ('type_codes', ((value, key) for key, value in EVENT_TYPES)),
+    ('type_codes', tuple((value, key) for key, value in EVENT_TYPES)),
     ('wincodes', WINCODES),
     ('specials', SPECIAL_DEVICES),
     ('xpad', XINPUT_MAPPING),
